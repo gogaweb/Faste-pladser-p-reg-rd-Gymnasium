@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pladskort – Øregård Gymnasium</title>
+<style>
+:root{
+ --paper:#f5f1e8;--card:#fffdf8;--ink:#1c2434;--muted:#667085;--line:#ddd6c6;
+ --navy:#13264b;--navy2:#1d3768;--gold:#b58a2e;--gold-l:#ead9a8;--gold-bg:#fbf4df;--desk:#334155;
+ --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+ --sans:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.4 var(--sans)}
+main{max-width:1600px;margin:auto;padding:0 22px 28px}
+
+/* ---------- Øregård-header ---------- */
+.brand{background:var(--navy);color:#fff;border-bottom:4px solid var(--gold)}
+.brand-in{max-width:1600px;margin:auto;padding:14px 22px;display:flex;align-items:center;gap:18px;min-height:96px}
+.brand-logo{display:flex;align-items:center}
+.brand-logo img{height:68px;width:auto;display:block}
+.monogram{width:64px;height:64px;border-radius:50%;border:2px solid var(--gold);display:grid;place-items:center;font:600 32px/1 var(--serif);color:var(--gold)}
+.brand-text{flex:1;min-width:0}
+.brand-name{font:600 25px/1.1 var(--serif);letter-spacing:.16em;text-transform:uppercase}
+.brand-slogan{font:italic 17px/1.3 var(--serif);color:var(--gold-l);margin-top:5px}
+.brand-slogan b{font-style:normal;color:var(--gold);padding:0 .15em}
+
+h1{font:600 24px/1.2 var(--serif);margin:20px 0 2px;color:var(--navy)}
+.sub{color:var(--muted);margin:0 0 14px}
+
+/* ---------- Værktøjslinje ---------- */
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;align-items:center}
+.toolbar.second{margin-bottom:14px;color:var(--muted);font-size:14px;gap:14px}
+button,select{border:1px solid var(--line);background:#fff;color:var(--ink);padding:8px 13px;border-radius:8px;font:inherit;cursor:pointer}
+button:hover:not(:disabled),select:hover{border-color:var(--navy2)}
+button:disabled{opacity:.45;cursor:default}
+button.primary{background:var(--navy);border-color:var(--navy);color:#fff;font-weight:650}
+button.primary:hover{background:var(--navy2)}
+button.gold{background:var(--gold);border-color:var(--gold);color:#fff;font-weight:650}
+.seg{display:inline-flex;border:1px solid var(--navy);border-radius:9px;overflow:hidden}
+.seg button{border:0;border-radius:0;background:#fff;color:var(--navy);font-weight:600}
+.seg button.on{background:var(--navy);color:#fff}
+.sep{width:1px;align-self:stretch;background:var(--line);margin:0 4px}
+.toolbar label{display:inline-flex;align-items:center;gap:6px}
+.classbar{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.classbar select{min-width:150px;font-weight:600}
+
+/* ---------- Layout ---------- */
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start}
+.map-panel,.sidebar,.brain{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.map-scroll{overflow:auto}
+.map{position:relative;width:100%;min-width:0;background:#fff;container-type:inline-size;aspect-ratio:1400/700}
+.map svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.desk-lines{fill:none;stroke:var(--desk);stroke-width:9;stroke-linecap:round;stroke-linejoin:round}
+.teacher{position:absolute;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;font-weight:750;letter-spacing:.1em;color:var(--navy);font-size:14px;font-size:max(12px,1.1cqw);border:3px solid var(--navy);border-radius:8px;background:var(--gold-bg);z-index:1}
+.seat{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:stretch;overflow:hidden;border:1px solid #cbd5e1;border-radius:8px;background:#fff;cursor:grab;user-select:none;z-index:2;box-shadow:0 1px 3px #00000012}
+.seat:active{cursor:grabbing}
+.seat .num{position:relative;font-size:10px;font-size:max(9px,.72cqw);font-weight:700;line-height:1.2;padding:2px 0;text-align:center;color:var(--muted);background:#f1f0ea;border-bottom:1px solid #e2e0d6;min-height:1.7em}
+.seat .sb{position:absolute;right:1px;top:50%;transform:translateY(-50%);padding:0 3px;border:0;background:transparent;font-size:max(10px,.8cqw);line-height:1;cursor:pointer;opacity:.55;border-radius:4px}
+.seat .sb:hover{opacity:1;background:#0001}
+.seat .name{flex:1;display:flex;align-items:center;justify-content:center;padding:3px 5px;text-align:center;font-size:12px;font-size:max(11px,.95cqw);font-weight:650;line-height:1.15;overflow-wrap:anywhere;hyphens:auto}
+.seat.empty .name{font-weight:400;color:#94a3b8}
+.seat.locked{border:2px solid var(--gold);background:var(--gold-bg)}
+.seat.locked .num{background:var(--gold-l);color:#6b4f12}
+.seat.locked .sb{opacity:1}
+.seat.off{background:repeating-linear-gradient(45deg,#eceae3,#eceae3 6px,#f7f5ef 6px,#f7f5ef 12px);cursor:default;border-style:dashed}
+.seat.off .name{font-weight:400;font-size:max(10px,.8cqw);color:#98a2b3}
+.seat.dragging,.person.dragging{opacity:.35}
+.seat.over{outline:3px dashed var(--navy2);background:#eaf1fc}
+
+.hint{font-size:13px;color:var(--muted);margin:10px 0 0}
+.sidebar h2{font:600 17px/1.2 var(--serif);margin:16px 0 6px;color:var(--navy)}
+.sidebar h2:first-child{margin-top:0}
+.sidebar p{font-size:13px;color:var(--muted);margin:0 0 9px}
+textarea{width:100%;min-height:130px;resize:vertical;padding:9px;border:1px solid var(--line);border-radius:8px;font:13px/1.4 var(--sans);color:var(--ink)}
+.sidebar button.wide{width:100%;margin-top:8px}
+.pool{display:flex;flex-wrap:wrap;gap:6px;min-height:64px;padding:9px;border:1px dashed var(--line);border-radius:8px;background:#faf8f2}
+.pool.over{background:#eaf1fc;border-color:var(--navy2)}
+.pool.absent{background:#f4f1ea;min-height:44px}
+.person{display:inline-flex;align-items:center;gap:4px;font-size:12px;padding:5px 5px 5px 8px;border:1px solid var(--line);border-radius:7px;background:#fff;cursor:grab;user-select:none}
+.person button{border:0;background:transparent;padding:0 4px;font-size:13px;line-height:1;color:var(--muted);border-radius:4px}
+.person button:hover{background:#0001;color:var(--ink)}
+.person.away{background:#eee9dd;color:#7a7466;text-decoration:line-through}
+.person.away span{text-decoration:line-through}
+.status{font-size:12.5px;color:var(--muted);min-height:18px;margin-top:10px}
+.count{font-size:12.5px;color:var(--muted);margin:0 0 6px}
+.count b{color:var(--ink)}
+.warn{color:#b42318;font-weight:600}
+.sidebar button.danger{margin-top:16px;color:#b42318;border-color:#e4b4ae;background:#fff}
+.sidebar button.danger:hover{background:#fdf0ee;border-color:#b42318}
+
+/* ---------- Dagens hjernepause ---------- */
+.brain{margin-top:16px;border-left:5px solid var(--gold);background:var(--gold-bg)}
+.brain-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.brain h2{font:600 21px/1.2 var(--serif);margin:0;color:var(--navy)}
+.brain-title{font:600 26px/1.2 var(--serif);margin:12px 0 6px;color:var(--navy)}
+.brain-desc{font-size:18px;line-height:1.5;margin:0;max-width:70ch}
+.row-btns{display:flex;gap:8px;flex-wrap:wrap}
+.all-list{margin-top:18px;padding-top:14px;border-top:1px solid var(--gold-l);display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:10px}
+.all-list[hidden]{display:none}
+.all-item{background:#fff;border:1px solid var(--gold-l);border-radius:10px;padding:11px 13px;display:flex;flex-direction:column;gap:6px}
+.all-item h3{font:600 16px/1.25 var(--serif);margin:0;color:var(--navy)}
+.all-item p{margin:0;font-size:14px;line-height:1.45}
+.all-item a{color:var(--navy2);font-weight:600;font-size:14px}
+.all-item button{align-self:flex-start;margin-top:auto;padding:5px 10px;font-size:13px}
+.brain-desc a{color:var(--navy2);font-weight:600}
+
+/* ---------- Dialog ---------- */
+dialog{border:0;border-radius:14px;padding:0;max-width:520px;width:calc(100% - 28px);box-shadow:0 18px 60px #0005;color:var(--ink)}
+dialog::backdrop{background:#0b1730aa}
+.dlg{padding:20px}
+.dlg h2{font:600 21px var(--serif);margin:0 0 4px;color:var(--navy)}
+.dlg h3{font:700 13px var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--gold);margin:16px 0 6px}
+.dlg p{margin:0 0 8px;font-size:13.5px;color:var(--muted)}
+.dlg .row{display:flex;gap:8px;flex-wrap:wrap}
+.dlg .close{margin-top:16px;width:100%}
+
+@media(max-width:950px){main{padding:0 10px 20px}.layout{grid-template-columns:1fr}.sidebar{order:2}.map{min-width:900px}.brand-in{flex-wrap:wrap}}
+
+/* ---------- Udskrift ---------- */
+.print-only{display:none}
+@page{size:A4 landscape;margin:8mm}
+@media print{
+ html,body{height:auto}
+ body{background:#fff}
+ main{padding:0;max-width:none}
+ .brand{border-bottom-width:2px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+ .brand-in{padding:3mm 4mm;min-height:0;gap:10px}
+ .brand-logo img{height:11mm}.monogram{width:11mm;height:11mm;font-size:6mm}
+ .brand-name{font-size:5mm}.brand-slogan{font-size:3.4mm;margin-top:1mm}
+ .toolbar,.sidebar,.sub,.hint,.brain,h1,.seat .sb{display:none!important}
+ .print-only{display:flex;justify-content:space-between;align-items:baseline;margin:2mm 1mm 1mm;font:600 4.2mm var(--serif);color:var(--navy)}
+ .print-only span:last-child{font:3.2mm var(--sans);color:var(--muted)}
+ .layout{display:block}
+ .map-panel{border:0;padding:0;background:none}
+ .map-scroll{overflow:visible}
+ .map{width:min(281mm,calc(160mm * var(--ar,2)));min-width:0;margin:0 auto;break-inside:avoid;page-break-inside:avoid}
+ .seat{box-shadow:none}
+ .seat .num{font-size:8.5px}
+ .seat .name{font-size:11px}
+ *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+</head>
+<body>
+
+<header class="brand">
+ <div class="brand-in">
+  <div class="brand-logo" id="brandLogo" data-dyn></div>
+  <div class="brand-text">
+   <div class="brand-name">Øregård Gymnasium</div>
+   <div class="brand-slogan">Faglighed<b>·</b>fællesskab<b>·</b>dannelse</div>
+  </div>
+ </div>
+</header>
+
+<main>
+<h1>Pladskort</h1>
+<p class="sub">Vælg opstilling, indsæt elevlisten, og træk eleverne rundt eller fordel dem tilfældigt. Alt gemmes automatisk i din browser.</p>
+
+<div class="toolbar">
+ <div class="classbar">
+  <label><b>Klasse</b>
+   <select id="classSel" data-dyn></select></label>
+  <button id="classNew" title="Opret ny klasse">Ny</button>
+  <button id="classRename">Omdøb</button>
+  <button id="classDel">Slet</button>
+ </div>
+ <div class="sep"></div>
+ <div class="seg" role="group" aria-label="Bordopstilling">
+  <button data-layout="4x4">4x4</button>
+  <button data-layout="hestesko">Hestesko, 901-2</button>
+ </div>
+</div>
+
+<div class="toolbar">
+ <button class="primary" id="random">Fordel tilfældigt</button>
+ <button id="order">Placer i listens rækkefølge</button>
+ <button id="clear">Ryd pladser</button>
+ <button id="undo">↶ Fortryd</button>
+ <div class="sep"></div>
+ <button id="print">Udskriv / PDF</button>
+ <button id="png">Gem som billede</button>
+ <button class="gold" id="share">Del / gem / importér …</button>
+</div>
+
+<div class="toolbar second">
+ <label id="sideWrap">Plads 1 er forrest til
+  <select id="side"><option value="left">venstre</option><option value="right">højre</option></select></label>
+ <label><input type="checkbox" id="flip"> Vend planen 180°</label>
+ <label><input type="checkbox" id="short"> Korte navne</label>
+</div>
+
+<div class="layout">
+ <div>
+  <section class="map-panel">
+   <div class="print-only"><span id="pTitle"></span><span id="pDate"></span></div>
+   <div class="map-scroll"><div class="map" id="map" aria-label="Bordplan">
+    <svg id="svg" viewBox="0 0 1400 700" preserveAspectRatio="none" aria-hidden="true">
+     <g class="desk-lines"><path id="deskPath" d=""/></g>
+    </svg>
+   </div></div>
+   <p class="hint" id="hint"></p>
+  </section>
+
+  <section class="brain" aria-labelledby="brainH">
+   <div class="brain-head"><h2 id="brainH">Dagens hjernepause</h2><div class="row-btns"><button class="primary" id="newBreak">Træk en ny</button><button id="allBreaks" aria-expanded="false">Se alle energizers</button></div></div>
+   <div id="breakBody" data-dyn></div>
+   <div class="all-list" id="allList" data-dyn hidden></div>
+  </section>
+ </div>
+
+ <aside class="sidebar">
+  <h2>Elevliste</h2>
+  <p>Ét navn pr. linje, eller adskilt af komma. Tilføjer du navne senere, bevares placeringerne.</p>
+  <textarea id="list" placeholder="Anna&#10;Benjamin&#10;Clara, David, Emma"></textarea>
+  <button class="primary wide" id="load">Indlæs elevliste</button>
+
+  <h2>Elever uden plads</h2>
+  <p>Træk et navn til en ledig plads. Træk en elev fra en plads over på en anden for at bytte.</p>
+  <div class="count" id="count"></div>
+  <div class="pool" id="pool" data-dyn></div>
+
+  <h2>Fraværende</h2>
+  <p>Fraværende elever bliver ikke fordelt. Træk en elev herhen – eller tryk ✕ ved navnet.</p>
+  <div class="pool absent" id="absent" data-dyn></div>
+
+  <button class="wide danger" id="wipe" title="Sletter alle elevnavne og placeringer i denne browser">Fjern alle elever fra hukommelsen</button>
+  <div class="status" id="status" aria-live="polite"></div>
+ </aside>
+</div>
+</main>
+
+<dialog id="dlg">
+ <div class="dlg">
+  <h2>Del, gem og importér</h2>
+  <h3>Del med en kollega</h3>
+  <p>Filen er en komplet kopi af programmet med klassen indbygget. Kollegaen åbner den i sin browser, og klassen er klar.</p>
+  <div class="row">
+   <button class="primary" id="exCur">Gem denne klasse som html-fil</button>
+   <button id="exAll">Gem alle klasser</button>
+  </div>
+  <h3>Importér</h3>
+  <p>Vælg en html-fil, du har fået fra en kollega (eller en tidligere sikkerhedskopi). Klasserne lægges til dine egne.</p>
+  <div class="row"><button id="imp">Importér fra fil …</button></div>
+  <input type="file" id="impFile" accept=".html,.htm,.json" hidden>
+  <h3>Logo</h3>
+  <p>Tilføj skolens logo. Det gemmes i din browser og følger med, når du deler en fil.</p>
+  <div class="row">
+   <button id="upLogo">Vælg logo …</button>
+   <button id="rmImg">Fjern logo</button>
+  </div>
+  <input type="file" id="logoFile" accept="image/*" hidden>
+  <div class="status" id="dlgStatus" aria-live="polite"></div>
+  <button class="close" id="dlgClose">Luk</button>
+ </div>
+</dialog>
+
+<script id="seed" type="application/json">null</script>
+<script>
+(()=>{
+"use strict";
+const $=s=>document.querySelector(s);
+const LS_KEY="oeregaard-pladskort-v1",IMG_KEY="oeregaard-pladskort-img-v1";
+const LAYOUT_NAMES={"4x4":"4x4","hestesko":"Hestesko, 901-2"};
+
+/* ---------- Energizers (fra dokumentet "Energizers 2027") ---------- */
+const ENERGIZERS=[
+{t:"Kat i tørretumbler, Palmetræ, Elefant",d:"Læreren i midten af en cirkel peger og råber ”Sandra, elefant!”. Sandra laver snabel og sidemændene store ører. ”Kat i tørretumbler”: Sandra drejer rundt, og sidemændene laver en kasse. Find på flere."},
+{t:"Bizz-Buzz",d:"2-4 personer. Gruppen tæller fra 1 og opefter. Rammer man 5-tabellen, siger man ”BIZZ”, og rammer man 7-tabellen, siger man ”BUZZ”. Begge tabeller: BIZZ-BUZZ."},
+{t:"One Word at a Time",d:"Hele klassen eller grupper. Klassen skal fortælle en historie, hvor hver elev kun må bidrage med ét ord ad gangen. Faglig historie og fagbegreber indgår, og historien skal fx handle om Pia, Napoleon og Lars Løkke."},
+{t:"Rasputin Just Dance",d:"Dans med til videoen.",u:"https://www.youtube.com/watch?v=fCv5q2yoqAY"},
+{t:"Rør den andens venstre skulder",d:"I par: Rør den andens venstre skulder med din højre arm – og undgå selv at blive rørt."},
+{t:"Cowboy med lukkede øjne",d:"Tæl til 20 i en gruppe med lukkede øjne. Hvis man taler i munden på hinanden, starter man forfra."},
+{t:"Karamellen",d:"Rør rundt i den store gryde med flydende karamel – hofterne med."},
+{t:"Ninjaklap",d:"Store arme, klap samtidig med læreren (hurtigt). Eller krydsbevægelser: hånd og fod."},
+{t:"1, 2, 3",d:"I par tælles 1-2-3. Først skiftes 1 ud med et klap. Dernæst 2 med et hop. Sidst 3 med en drejning rundt eller ”hurra”. Der tælles ikke på bevægelserne."},
+{t:"Clap21",d:"I par med fire hænder oppe. Man skiftes til at klappe på kryds – enten én eller to gange. Der staves ved hvert klap til et fagbegreb. Den, der klapper det sidste bogstav, vinder."},
+{t:"Lille Peter Edderkop",d:"Svære fingerbevægelser."},
+{t:"Håndgranat",d:"Læreren peger på en elev, som rammes af håndgranaten, hvorefter bølgen (stå op/sid ned) starter fra eleven. Eventuelt med klap."},
+{t:"Regnvejr",d:"Hænderne gnides mod hinanden hårdere og hårdere, det bliver til knips, klap og tordenskrald (3 hop), og så stilner det af igen …"},
+{t:"Krig eller fred",d:"I par: Meld krig eller fred (tommelfingerkrig). Hvis ”Fred”: Modstanderen staver et fagbegreb med tommelfingeren, og den anden kopierer – uden at de rører hinanden. Hvis ”Krig”, siges: ”1-2-3-10, jeg erklærer tommelkrig” – og så tommelfingerkrig."},
+{t:"Gotcha",d:"I par: Hver har både håndflade og finger pegende op og ned. Læreren siger ”Gotcha”, og man fanger den andens finger. Gentag med krydsede arme."},
+{t:"Flagstang",d:"I par. To arme skiftevis op og ned. Den, der har armene nede, viser et antal fingre, og den, der har armene oppe, skal tilføje til 10."},
+{t:"Sten, saks, papir MAT",d:"Hver viser et antal fingre, og den første, der ganger sammen, har vundet. 2-3 personer. Alternativ: Den anden hånd laver håndflade ned (minustegn) eller håndflade op (plustegn). Fx: venstre håndflade ned og højre hånd viser 2 fingre = spilleren viser tallet ”-2”."},
+{t:"Fight Club",d:"I par med samlede fødder og hænderne foran kroppen. Forsøg at bringe hinanden ud af balance ved at ramme hinandens håndflader. Der må kun skubbes og afvises – IKKE holdes."},
+{t:"Lars Larsen",d:"Øv et godt håndtryk og sig: ”Goddag, mit navn er XX, og jeg har et godt tilbud til dig.”"},
+{t:"Håndtegn – klassens handshake",d:"Lær dette handshake – eller lav et ”klassens handshake”.",u:"https://www.youtube.com/watch?v=u-d0m8W1XEk"}
+];
+
+/* ---------- Opstillinger ---------- */
+// Alt tegnes i et fast koordinatsystem pr. opstilling. Planen vendes evt. 180° bagefter.
+function buildLayout(key,plan){
+ const seats=[],lines=[];let vw,vh,W,H,teacher;
+ if(key==="4x4"){
+  vw=1400;vh=700;W=140;H=92;
+  const PER=8,MARGIN=65,DG=50,ROW0=190,RP=140,LO=10,IN=4;
+  for(let id=1;id<=32;id++){
+   const r=Math.floor((id-1)/PER);let c=(id-1)%PER;if(plan.side==="right")c=PER-1-c;
+   const d=Math.floor(c/2),k=c%2;
+   seats.push({id,x:MARGIN+d*(2*W+DG)+k*W+W/2,y:ROW0+r*RP});
+  }
+  for(let r=0;r<4;r++)for(let d=0;d<4;d++){
+   const x0=MARGIN+d*(2*W+DG),y=ROW0+r*RP-H/2-LO;lines.push([x0+IN,y,x0+2*W-IN,y]);
+  }
+  teacher={cx:700,cy:47,w:364,h:60};
+ }else{
+  vw=1506;vh=1018;W=132;H=84;
+  const GAP=6,LOH=10,LOV=12,IN=4;
+  const hd=(ids,x0,cy)=>{ids.forEach((id,k)=>seats.push({id,x:x0+W/2+k*W,y:cy}));const y=cy-H/2-LOH;lines.push([x0+IN,y,x0+ids.length*W-IN,y])};
+  const vd=(ids,cx,y0,side)=>{ids.forEach((id,k)=>seats.push({id,x:cx,y:y0+k*(H+GAP)}));const x=side==="L"?cx-W/2-LOV:cx+W/2+LOV;lines.push([x,y0-H/2+IN,x,y0+(ids.length-1)*(H+GAP)+H/2-IN])};
+  // Ydre hestesko: 1-22 med uret fra lærerens højre hånd (set med læreren øverst)
+  vd([1,2],1436,188,"L");vd([3,4],1436,458,"L");vd([5,6],1436,728,"L");
+  [[8,7],[10,9],[12,11],[14,13],[16,15]].forEach((ids,i)=>hd(ids,1224-i*304,956));
+  vd([22,21],70,318,"R");vd([20,19],70,523,"R");vd([18,17],70,728,"R");
+  // Indre borde: 23-26 nærmest læreren, 27-28 i midten, 29-34 bagerst (31-32 i direkte forlængelse af 29-30)
+  hd([23,24],780,278);hd([25,26],1084,278);
+  hd([27,28],158,408);
+  hd([29,30],158,728);hd([31,32],422,728);hd([33,34],1084,728);
+  teacher={cx:800,cy:62,w:420,h:56};
+ }
+ if(plan.flip){
+  seats.forEach(s=>{s.x=vw-s.x;s.y=vh-s.y});
+  lines.forEach(l=>{l[0]=vw-l[0];l[1]=vh-l[1];l[2]=vw-l[2];l[3]=vh-l[3]});
+  teacher={...teacher,cx:vw-teacher.cx,cy:vh-teacher.cy};
+ }
+ seats.sort((a,b)=>a.id-b.id);
+ return{vw,vh,W,H,seats,lines,teacher,ids:seats.map(s=>s.id)};
+}
+
+/* ---------- Data ---------- */
+const uid=()=>Math.random().toString(36).slice(2,9);
+const defaultPlan=()=>({assignment:{},locked:{},disabled:{},side:"left",flip:false});
+const newClass=(name,layout="4x4")=>({id:uid(),name,layout,listText:"",students:[],nextId:1,plans:{}});
+function sanitizeClass(c){
+ const o=newClass(String(c&&c.name||"Klasse"),c&&LAYOUT_NAMES[c.layout]?c.layout:"4x4");
+ o.id=String(c&&c.id||o.id);o.listText=String(c&&c.listText||"");
+ const seen=new Set();
+ (c&&Array.isArray(c.students)?c.students:[]).forEach(s=>{
+  const id=Number(s&&s.id);if(!s||!s.name||!Number.isFinite(id)||seen.has(id))return;
+  seen.add(id);o.students.push({id,name:String(s.name),absent:!!s.absent});
+ });
+ o.nextId=Math.max(Number(c&&c.nextId)||1,...o.students.map(s=>s.id+1),1);
+ Object.keys(LAYOUT_NAMES).forEach(k=>{
+  const p=c&&c.plans&&c.plans[k];if(!p)return;
+  const q=defaultPlan();q.side=p.side==="right"?"right":"left";q.flip=!!p.flip;
+  ["assignment","locked","disabled"].forEach(f=>{if(p[f]&&typeof p[f]==="object")q[f]={...p[f]}});
+  o.plans[k]=q;
+ });
+ return o;
+}
+let state,images={logo:""},undoStack=[],currentBreak=-1;
+
+function loadState(){
+ let s=null;try{s=JSON.parse(localStorage.getItem(LS_KEY))}catch(e){}
+ if(!s||!Array.isArray(s.classes)||!s.classes.length)s={classes:[newClass("Min klasse")],current:null,shortNames:true,seen:[]};
+ s.classes=s.classes.map(sanitizeClass);
+ if(!s.classes.some(c=>c.id===s.current))s.current=s.classes[0].id;
+ s.shortNames=s.shortNames!==false;s.seen=Array.isArray(s.seen)?s.seen:[];
+ return s;
+}
+function save(){try{localStorage.setItem(LS_KEY,JSON.stringify(state))}catch(e){}}
+function saveImages(){try{localStorage.setItem(IMG_KEY,JSON.stringify(images));return true}catch(e){return false}}
+const cls=()=>state.classes.find(c=>c.id===state.current);
+const plan=(c=cls(),k=c.layout)=>c.plans[k]||(c.plans[k]=defaultPlan());
+const layout=()=>buildLayout(cls().layout,plan());
+const byId=(c,id)=>c.students.find(s=>s.id===id);
+const say=t=>{$("#status").textContent=t};
+
+/* Fjern ugyldige placeringer i alle opstillinger */
+function clean(c){
+ Object.keys(LAYOUT_NAMES).forEach(k=>{
+  const p=plan(c,k),valid=new Set(buildLayout(k,p).ids),used=new Set();
+  Object.keys(p.disabled).forEach(s=>{if(!p.disabled[s]||!valid.has(+s))delete p.disabled[s]});
+  Object.keys(p.assignment).forEach(s=>{
+   const st=byId(c,p.assignment[s]);
+   if(!valid.has(+s)||!st||st.absent||p.disabled[s]||used.has(st.id)){delete p.assignment[s];delete p.locked[s];return}
+   used.add(st.id);
+  });
+  Object.keys(p.locked).forEach(s=>{if(!p.locked[s]||!p.assignment[s])delete p.locked[s]});
+ });
+}
+function mutate(fn,msg){
+ const c=cls();undoStack.push(JSON.stringify(c));if(undoStack.length>40)undoStack.shift();
+ fn(c,plan(c));clean(c);save();render();if(msg)say(msg);
+}
+function undo(){
+ if(!undoStack.length)return;
+ const old=sanitizeClass(JSON.parse(undoStack.pop())),i=state.classes.findIndex(c=>c.id===old.id);
+ if(i<0)return;state.classes[i]=old;clean(old);save();syncList();render();say("Seneste ændring er fortrudt.");
+}
+
+/* ---------- Korte navne ---------- */
+function shortNames(c){
+ const out={},groups={};
+ c.students.forEach(s=>{const f=s.name.split(" ")[0];(groups[f.toLowerCase()]||(groups[f.toLowerCase()]=[])).push(s)});
+ Object.values(groups).forEach(g=>{
+  const first=g[0].name.split(" ")[0];
+  if(g.length===1){out[g[0].id]=first;return}
+  const rests=g.map(s=>s.name.slice(s.name.split(" ")[0].length).trim());
+  const max=Math.max(...rests.map(r=>r.length));let n=1;
+  for(;n<max;n++){const p=rests.map(r=>r.slice(0,n).trim());if(new Set(p.filter(Boolean)).size===p.filter(Boolean).length)break}
+  g.forEach((s,i)=>{const r=rests[i];out[s.id]=r?(s.name.split(" ")[0]+" "+r.slice(0,n).trim()+(r.length>n?".":"")):first});
+ });
+ return out;
+}
+
+/* ---------- Tegning ---------- */
+const map=$("#map"),pool=$("#pool"),absentEl=$("#absent");
+let dragSource=null;
+function makeDrag(el,source){
+ el.draggable=true;
+ el.addEventListener("dragstart",e=>{dragSource=source;e.dataTransfer.effectAllowed="move";e.dataTransfer.setData("text/plain",JSON.stringify(source));el.classList.add("dragging")});
+ el.addEventListener("dragend",()=>{el.classList.remove("dragging");document.querySelectorAll(".over").forEach(x=>x.classList.remove("over"))});
+}
+const getSource=e=>{try{return JSON.parse(e.dataTransfer.getData("text/plain"))||dragSource}catch(_){return dragSource}};
+const seatOf=(p,sid)=>Object.keys(p.assignment).find(k=>p.assignment[k]===sid);
+
+function render(){
+ const c=cls(),p=plan(),L=layout(),names=state.shortNames?shortNames(c):null;
+ // værktøjslinje
+ document.querySelectorAll("[data-layout]").forEach(b=>b.classList.toggle("on",b.dataset.layout===c.layout));
+ $("#side").value=p.side;$("#sideWrap").style.display=c.layout==="4x4"?"":"none";
+ $("#flip").checked=p.flip;$("#short").checked=state.shortNames;
+ $("#undo").disabled=!undoStack.length;
+ const sel=$("#classSel");sel.innerHTML="";
+ state.classes.forEach(x=>{const o=document.createElement("option");o.value=x.id;o.textContent=x.name;if(x.id===c.id)o.selected=true;sel.appendChild(o)});
+ $("#classDel").disabled=state.classes.length<2;
+ // kort
+ map.style.aspectRatio=L.vw+"/"+L.vh;map.style.setProperty("--ar",L.vw/L.vh);
+ $("#svg").setAttribute("viewBox","0 0 "+L.vw+" "+L.vh);
+ $("#deskPath").setAttribute("d",L.lines.map(l=>"M"+l[0]+" "+l[1]+" L"+l[2]+" "+l[3]).join(" "));
+ map.querySelectorAll("[data-gen]").forEach(x=>x.remove());
+ const t=document.createElement("div");t.className="teacher";t.dataset.gen="1";t.textContent="LÆRER";
+ Object.assign(t.style,{left:L.teacher.cx/L.vw*100+"%",top:L.teacher.cy/L.vh*100+"%",width:L.teacher.w/L.vw*100+"%",height:L.teacher.h/L.vh*100+"%"});
+ map.appendChild(t);
+ L.seats.forEach(s=>{
+  const id=s.id,st=p.assignment[id]?byId(c,p.assignment[id]):null,off=!!p.disabled[id],lock=!!p.locked[id];
+  const el=document.createElement("div");el.dataset.gen="1";el.dataset.seat=id;
+  el.className="seat "+(off?"off":st?"filled":"empty")+(lock?" locked":"");
+  el.style.left=s.x/L.vw*100+"%";el.style.top=s.y/L.vh*100+"%";
+  el.style.width=L.W/L.vw*100+"%";el.style.height=L.H/L.vh*100+"%";
+  const num=document.createElement("div");num.className="num";
+  const lab=document.createElement("span");lab.textContent="Plads "+id;num.appendChild(lab);
+  const sb=document.createElement("button");sb.className="sb";sb.type="button";
+  if(st){sb.textContent=lock?"🔒":"🔓";sb.title=lock?"Lås op – eleven kan flyttes igen":"Lås eleven til denne plads";
+   sb.onclick=e=>{e.stopPropagation();mutate((cc,pp)=>{if(pp.locked[id])delete pp.locked[id];else pp.locked[id]=true},lock?"Pladsen er låst op.":"Eleven er låst til plads "+id+" og flyttes ikke af tilfældig fordeling.")}}
+  else{sb.textContent="⊘";sb.title=off?"Sæt pladsen i brug igen":"Marker som ikke i brug";
+   sb.onclick=e=>{e.stopPropagation();mutate((cc,pp)=>{if(pp.disabled[id])delete pp.disabled[id];else pp.disabled[id]=true},off?"Plads "+id+" er i brug igen.":"Plads "+id+" er markeret som ikke i brug.")}}
+  sb.draggable=false;num.appendChild(sb);
+  const label=document.createElement("div");label.className="name";
+  label.textContent=off?"Ikke i brug":st?(names?names[st.id]:st.name):"Ledig";
+  if(st)el.title=st.name;
+  el.append(num,label);map.appendChild(el);
+  if(st&&!lock)makeDrag(el,{type:"seat",id});
+  el.addEventListener("dragover",e=>{e.preventDefault();el.classList.add("over")});
+  el.addEventListener("dragleave",()=>el.classList.remove("over"));
+  el.addEventListener("drop",e=>{e.preventDefault();el.classList.remove("over");onSeatDrop(id,getSource(e))});
+ });
+ // elevlister
+ pool.innerHTML="";absentEl.innerHTML="";
+ const seated=new Set(Object.values(p.assignment));
+ const unseated=c.students.filter(s=>!s.absent&&!seated.has(s.id));
+ unseated.forEach(s=>{
+  const el=document.createElement("div");el.className="person";const sp=document.createElement("span");sp.textContent=s.name;el.appendChild(sp);
+  const b=document.createElement("button");b.type="button";b.textContent="✕";b.title="Marker som fraværende";b.onclick=()=>setAbsent(s.id,true);el.appendChild(b);
+  pool.appendChild(el);makeDrag(el,{type:"pool",sid:s.id});
+ });
+ c.students.filter(s=>s.absent).forEach(s=>{
+  const el=document.createElement("div");el.className="person away";const sp=document.createElement("span");sp.textContent=s.name;el.appendChild(sp);
+  const b=document.createElement("button");b.type="button";b.textContent="↺";b.title="Marker som til stede";b.onclick=()=>setAbsent(s.id,false);el.appendChild(b);
+  absentEl.appendChild(el);makeDrag(el,{type:"absent",sid:s.id});
+ });
+ if(!unseated.length)pool.textContent=c.students.length?"Alle til stede er placeret.":"Indlæs en elevliste.";
+ if(!c.students.some(s=>s.absent))absentEl.textContent="Ingen fraværende.";
+ // tæller
+ const here=c.students.filter(s=>!s.absent).length,free=L.ids.filter(i=>!p.disabled[i]).length;
+ const cnt=$("#count");cnt.innerHTML="";
+ const sum=document.createElement("span");sum.textContent=c.students.length+" elever · "+here+" til stede · "+free+" pladser i brug";cnt.appendChild(sum);
+ if(here>free){const w=document.createElement("div");w.className="warn";w.textContent="Der er "+(here-free)+" elev(er) for mange til pladserne.";cnt.appendChild(w)}
+ $("#hint").textContent=hintText(c,L,free);
+ $("#pTitle").textContent=c.name+" – "+LAYOUT_NAMES[c.layout];
+ $("#pDate").textContent=new Date().toLocaleDateString("da-DK",{day:"numeric",month:"long",year:"numeric"});
+ document.title="Pladskort – "+c.name+" – Øregård Gymnasium";
+ renderBrand();
+}
+function hintText(c,L,free){
+ const base=c.layout==="4x4"?"4 rækker med 4 borde á 2 pladser = 32 pladser. Plads 1 sidder forrest nærmest læreren; nummereringen løber række for række bagud.":
+  "34 pladser. 1-22 løber med uret langs væggene fra lærerens højre hånd, 23-26 sidder nærmest læreren, 27-28 i midten og 29-34 bagerst.";
+ return base+" Brug ⊘ på en tom plads til at markere den som ikke i brug, og 🔓 på en elev for at låse vedkommende.";
+}
+function renderBrand(){
+ const lg=$("#brandLogo");lg.innerHTML="";
+ if(images.logo){const i=document.createElement("img");i.src=images.logo;i.alt="Øregård Gymnasium";lg.appendChild(i)}
+ else{const m=document.createElement("div");m.className="monogram";m.textContent="Ø";lg.appendChild(m)}
+}
+
+/* ---------- Handlinger ---------- */
+function onSeatDrop(id,src){
+ if(!src)return;const p=plan(),c=cls();
+ if(p.disabled[id]){say("Pladsen er markeret som ikke i brug.");return}
+ if(src.type==="pool"||src.type==="absent"){
+  if(p.assignment[id]){say("Pladsen er optaget. Træk en elev fra en plads for at bytte.");return}
+  mutate((cc,pp)=>{const s=byId(cc,src.sid);if(s)s.absent=false;pp.assignment[id]=src.sid},"Pladskortet er opdateret.");
+ }else if(src.type==="seat"){
+  const from=String(src.id);if(from===String(id))return;
+  if(p.locked[id]){say("Pladsen er låst. Lås den op for at flytte eleven.");return}
+  mutate((cc,pp)=>{const old=pp.assignment[id];pp.assignment[id]=pp.assignment[from];if(old)pp.assignment[from]=old;else delete pp.assignment[from]},"Pladskortet er opdateret.");
+ }
+}
+function setAbsent(sid,val){
+ mutate(c=>{const s=byId(c,sid);if(s)s.absent=val},val?"Eleven er markeret som fraværende.":"Eleven er til stede igen.");
+}
+pool.addEventListener("dragover",e=>{e.preventDefault();pool.classList.add("over")});
+pool.addEventListener("dragleave",()=>pool.classList.remove("over"));
+pool.addEventListener("drop",e=>{e.preventDefault();pool.classList.remove("over");const src=getSource(e);if(!src)return;
+ if(src.type==="seat")mutate((c,p)=>{delete p.assignment[src.id]},"Eleven er flyttet tilbage til elevlisten.");
+ else if(src.type==="absent")setAbsent(src.sid,false);
+});
+absentEl.addEventListener("dragover",e=>{e.preventDefault();absentEl.classList.add("over")});
+absentEl.addEventListener("dragleave",()=>absentEl.classList.remove("over"));
+absentEl.addEventListener("drop",e=>{e.preventDefault();absentEl.classList.remove("over");const src=getSource(e);if(!src)return;
+ if(src.type==="seat"){const p=plan();const sid=p.assignment[src.id];if(sid!==undefined)setAbsent(sid,true)}
+ else if(src.type==="pool")setAbsent(src.sid,true);
+});
+
+const parseList=t=>t.split(/[\n,;]+/).map(s=>s.trim().replace(/\s+/g," ")).filter(Boolean);
+function syncList(){$("#list").value=cls().listText}
+$("#list").addEventListener("input",()=>{cls().listText=$("#list").value;save()});
+$("#load").onclick=()=>{
+ const names=parseList($("#list").value);
+ if(!names.length){say("Der er ingen navne i feltet.");return}
+ mutate(c=>{
+  c.listText=$("#list").value;
+  const old=c.students.slice(),next=[];
+  names.forEach(n=>{const i=old.findIndex(s=>s.name===n);if(i>=0)next.push(old.splice(i,1)[0]);else next.push({id:c.nextId++,name:n,absent:false})});
+  c.students=next;
+ },"");
+ const c=cls(),p=plan(),free=layout().ids.filter(i=>!p.disabled[i]).length;
+ say(c.students.length+" elever indlæst til "+free+" pladser."+(c.students.length>free?" Der er "+(c.students.length-free)+" for mange.":""));
+};
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function fill(random){
+ const c=cls();if(!c.students.length){say("Indlæs først en elevliste.");return}
+ let left=0;
+ mutate((cc,p)=>{
+  const keep={},lockedIds=new Set();
+  Object.keys(p.assignment).forEach(s=>{if(p.locked[s]){keep[s]=p.assignment[s];lockedIds.add(p.assignment[s])}});
+  let ids=cc.students.filter(s=>!s.absent&&!lockedIds.has(s.id)).map(s=>s.id);
+  if(random)shuffle(ids);
+  const free=layout().ids.filter(i=>!p.disabled[i]&&!keep[i]);
+  p.assignment={...keep};
+  free.forEach((seat,i)=>{if(ids[i]!==undefined)p.assignment[seat]=ids[i]});
+  left=Math.max(0,ids.length-free.length);
+ },"");
+ const p=plan(),n=Object.keys(p.assignment).length,lk=Object.keys(p.locked).length;
+ say(n+" elever er placeret"+(random?" tilfældigt":" i listens rækkefølge")+(lk?" ("+lk+" låst)":"")+"."+(left?" "+left+" fik ikke plads.":""));
+}
+$("#random").onclick=()=>fill(true);
+$("#order").onclick=()=>fill(false);
+$("#clear").onclick=()=>{
+ const p=plan(),lk=Object.keys(p.locked).length;
+ mutate((c,pp)=>{const keep={};Object.keys(pp.assignment).forEach(s=>{if(pp.locked[s])keep[s]=pp.assignment[s]});pp.assignment=keep},lk?"Pladserne er ryddet. "+lk+" låste elever blev stående.":"Alle pladser er ryddet.");
+};
+$("#undo").onclick=undo;
+$("#wipe").onclick=()=>{
+ const n=state.classes.reduce((a,c)=>a+c.students.length,0);
+ if(!confirm("Fjerne alle "+n+" elever fra hukommelsen i ALLE klasser?\n\nAlle elevnavne og placeringer slettes fra denne browser. Klassenavne og bordopstillinger beholdes. Det kan ikke fortrydes."))return;
+ state.classes.forEach(c=>{
+  c.students=[];c.nextId=1;c.listText="";
+  Object.keys(c.plans).forEach(k=>{c.plans[k].assignment={};c.plans[k].locked={}});
+ });
+ undoStack=[];state.seen=[];save();syncList();render();say("Alle elever er fjernet fra hukommelsen.");
+};
+$("#print").onclick=()=>window.print();
+$("#side").onchange=e=>mutate((c,p)=>{p.side=e.target.value},"Plads 1 er nu forrest til "+(e.target.value==="left"?"venstre":"højre")+".");
+$("#flip").onchange=e=>mutate((c,p)=>{p.flip=e.target.checked},"Planen er vendt.");
+$("#short").onchange=e=>{state.shortNames=e.target.checked;save();render()};
+document.querySelectorAll("[data-layout]").forEach(b=>b.onclick=()=>{
+ if(cls().layout===b.dataset.layout)return;
+ cls().layout=b.dataset.layout;undoStack=[];save();render();
+ say("Opstilling: "+LAYOUT_NAMES[b.dataset.layout]+". Hver opstilling husker sin egen fordeling.");
+});
+
+/* ---------- Klasser ---------- */
+$("#classSel").onchange=e=>{state.current=e.target.value;undoStack=[];save();syncList();render();say("")};
+$("#classNew").onclick=()=>{
+ const n=(prompt("Navn på den nye klasse:","")||"").trim();if(!n)return;
+ const c=newClass(n,cls().layout);state.classes.push(c);state.current=c.id;undoStack=[];save();syncList();render();say("Klassen “"+n+"” er oprettet.");
+};
+$("#classRename").onclick=()=>{
+ const n=(prompt("Nyt navn på klassen:",cls().name)||"").trim();if(!n)return;
+ cls().name=n;save();render();
+};
+$("#classDel").onclick=()=>{
+ if(state.classes.length<2)return;
+ if(!confirm("Slet klassen “"+cls().name+"” og alle dens placeringer?"))return;
+ state.classes=state.classes.filter(c=>c.id!==state.current);state.current=state.classes[0].id;undoStack=[];save();syncList();render();
+};
+
+/* ---------- Del, gem og importér ---------- */
+function download(content,name,type){
+ const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([content],{type}));a.download=name;
+ document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500);
+}
+const safeName=s=>s.replace(/[^\p{L}\p{N}_-]+/gu,"_").replace(/^_+|_+$/g,"")||"klasse";
+function exportHtml(classes,name){
+ const dlg=$("#dlg");if(dlg.open)dlg.close();
+ const clone=document.documentElement.cloneNode(true);
+ clone.querySelectorAll("[data-gen]").forEach(e=>e.remove());
+ clone.querySelectorAll("[data-dyn]").forEach(e=>{e.innerHTML=""});
+ const payload={kind:"oeregaard-pladskort",stamp:Date.now(),classes,logo:images.logo};
+ clone.querySelector("#allList").hidden=true;clone.querySelector("#allBreaks").textContent="Se alle energizers";clone.querySelector("#allBreaks").setAttribute("aria-expanded","false");
+ clone.querySelector("#seed").textContent=JSON.stringify(payload).replace(/</g,"\\u003c");
+ download("<!DOCTYPE html>\n"+clone.outerHTML,name,"text/html");
+}
+$("#share").onclick=()=>{$("#dlgStatus").textContent="";$("#dlg").showModal()};
+$("#dlgClose").onclick=()=>$("#dlg").close();
+$("#exCur").onclick=()=>exportHtml([cls()],"Pladskort_"+safeName(cls().name)+".html");
+$("#exAll").onclick=()=>exportHtml(state.classes,"Pladskort_alle_klasser.html");
+$("#imp").onclick=()=>$("#impFile").click();
+function importPayload(o,silent){
+ if(!o||o.kind!=="oeregaard-pladskort"||!Array.isArray(o.classes)||!o.classes.length)throw new Error("Filen indeholder ingen pladskort.");
+ const fresh=state.classes.length===1&&!state.classes[0].students.length&&!state.classes[0].listText;
+ const added=o.classes.map(sanitizeClass).map(c=>{c.id=uid();return c});
+ if(fresh)state.classes=[];
+ added.forEach(c=>{if(state.classes.some(x=>x.name===c.name))c.name+=" (importeret)";state.classes.push(c)});
+ state.current=added[0].id;
+ if(o.logo&&typeof o.logo==="string"&&o.logo.startsWith("data:image/"))images.logo=o.logo;
+ saveImages();undoStack=[];
+ state.classes.forEach(clean);save();
+ return added.length;
+}
+$("#impFile").onchange=async e=>{
+ const f=e.target.files[0];e.target.value="";if(!f)return;
+ const out=$("#dlgStatus");
+ try{
+  const txt=await f.text();let obj;
+  if(txt.trim().startsWith("{"))obj=JSON.parse(txt);
+  else{const m=txt.match(new RegExp('<script[^>]*id=["\']seed["\'][^>]*>([\\s\\S]*?)<'+'/script>'));if(!m)throw new Error("Kunne ikke finde pladskort i filen.");obj=JSON.parse(m[1])}
+  const n=importPayload(obj);syncList();render();out.textContent=n+" klasse(r) importeret.";
+ }catch(err){out.textContent=err.message||"Filen kunne ikke læses."}
+};
+function readImage(file,maxH){return new Promise((res,rej)=>{
+ const fr=new FileReader();fr.onerror=rej;
+ fr.onload=()=>{const img=new Image();img.onerror=rej;img.onload=()=>{
+  const k=Math.min(1,maxH/img.height),cv=document.createElement("canvas");cv.width=Math.max(1,Math.round(img.width*k));cv.height=Math.max(1,Math.round(img.height*k));
+  cv.getContext("2d").drawImage(img,0,0,cv.width,cv.height);res(cv.toDataURL("image/png"));
+ };img.src=fr.result};fr.readAsDataURL(file);
+})}
+$("#upLogo").onclick=()=>$("#logoFile").click();
+async function pickImage(e,key,h){
+ const f=e.target.files[0];e.target.value="";if(!f)return;
+ try{images[key]=await readImage(f,h);const ok=saveImages();renderBrand();$("#dlgStatus").textContent=ok?"Billedet er tilføjet.":"Billedet er tilføjet, men kunne ikke gemmes i browseren."}
+ catch(err){$("#dlgStatus").textContent="Billedet kunne ikke læses."}
+}
+$("#logoFile").onchange=e=>pickImage(e,"logo",160);
+$("#rmImg").onclick=()=>{images={logo:""};saveImages();renderBrand();$("#dlgStatus").textContent="Logoet er fjernet."};
+
+/* ---------- Gem som billede (PNG) ---------- */
+function loadImg(src){return new Promise(r=>{if(!src)return r(null);const i=new Image();i.onload=()=>r(i);i.onerror=()=>r(null);i.src=src})}
+function wrapFit(ctx,text,maxW,maxH,start,weight,font){
+ for(let size=start;size>=8;size-=1){
+  ctx.font=weight+" "+size+"px "+font;
+  const words=text.split(" "),lines=[];let cur="";
+  words.forEach(w=>{const t=cur?cur+" "+w:w;if(ctx.measureText(t).width<=maxW||!cur)cur=t;else{lines.push(cur);cur=w}});
+  lines.push(cur);
+  if(lines.length*size*1.15<=maxH&&lines.every(l=>ctx.measureText(l).width<=maxW))return{size,lines};
+ }
+ return{size:8,lines:[text]};
+}
+async function savePng(){
+ const c=cls(),p=plan(),L=layout(),names=state.shortNames?shortNames(c):null;
+ const mapW=1800,k=mapW/L.vw,mapH=Math.round(L.vh*k),pad=30,head=124,foot=46;
+ const cv=document.createElement("canvas");cv.width=mapW+pad*2;cv.height=head+mapH+foot+pad;
+ const ctx=cv.getContext("2d"),serif='Georgia,"Palatino Linotype",serif',sans="system-ui,Segoe UI,Arial,sans-serif";
+ ctx.fillStyle="#fff";ctx.fillRect(0,0,cv.width,cv.height);
+ ctx.fillStyle="#13264b";ctx.fillRect(0,0,cv.width,head);ctx.fillStyle="#b58a2e";ctx.fillRect(0,head-5,cv.width,5);
+ const lg=await loadImg(images.logo);
+ let tx=pad;
+ if(lg){const h=80,w=lg.width/lg.height*h;ctx.drawImage(lg,tx,22,w,h);tx+=w+20}
+ else{ctx.strokeStyle="#b58a2e";ctx.lineWidth=3;ctx.beginPath();ctx.arc(tx+36,62,34,0,7);ctx.stroke();ctx.fillStyle="#b58a2e";ctx.font="600 38px "+serif;ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("Ø",tx+36,64);tx+=90}
+ ctx.textAlign="left";ctx.textBaseline="alphabetic";
+ ctx.fillStyle="#fff";ctx.font="600 34px "+serif;ctx.fillText("ØREGÅRD GYMNASIUM".split("").join(String.fromCharCode(8202)+String.fromCharCode(8202)),tx,58);
+ ctx.fillStyle="#ead9a8";ctx.font="italic 22px "+serif;ctx.fillText("Faglighed · fællesskab · dannelse",tx,92);
+ ctx.fillStyle="#13264b";ctx.font="600 26px "+serif;ctx.fillText(c.name+" – "+LAYOUT_NAMES[c.layout],pad,head+34);
+ const ox=pad,oy=head+44,mh=mapH-14;
+ const sc=Math.min(1,mh/mapH),mw=mapW*sc,kk=k*sc,x0=ox+(mapW-mw)/2;
+ ctx.strokeStyle="#334155";ctx.lineWidth=9*kk;ctx.lineCap="round";
+ L.lines.forEach(l=>{ctx.beginPath();ctx.moveTo(x0+l[0]*kk,oy+l[1]*kk);ctx.lineTo(x0+l[2]*kk,oy+l[3]*kk);ctx.stroke()});
+ const rr=(x,y,w,h,r)=>{ctx.beginPath();ctx.roundRect?ctx.roundRect(x,y,w,h,r):ctx.rect(x,y,w,h)};
+ // lærer
+ const T=L.teacher;rr(x0+(T.cx-T.w/2)*kk,oy+(T.cy-T.h/2)*kk,T.w*kk,T.h*kk,8*kk);ctx.fillStyle="#fbf4df";ctx.fill();ctx.strokeStyle="#13264b";ctx.lineWidth=3*kk*1.4;ctx.stroke();
+ ctx.fillStyle="#13264b";ctx.font="700 "+Math.round(22*kk*1.3)+"px "+sans;ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("L Æ R E R",x0+T.cx*kk,oy+T.cy*kk);
+ L.seats.forEach(s=>{
+  const id=s.id,st=p.assignment[id]?byId(c,p.assignment[id]):null,off=!!p.disabled[id],lock=!!p.locked[id];
+  const w=L.W*kk,h=L.H*kk,x=x0+s.x*kk-w/2,y=oy+s.y*kk-h/2,nh=h*.22;
+  rr(x,y,w,h,8*kk);ctx.fillStyle=off?"#eeece5":lock?"#fbf4df":"#fff";ctx.fill();ctx.strokeStyle=lock?"#b58a2e":"#cbd5e1";ctx.lineWidth=lock?3*kk*1.4:1.5;if(off)ctx.setLineDash([6,4]);ctx.stroke();ctx.setLineDash([]);
+  ctx.save();rr(x,y,w,h,8*kk);ctx.clip();ctx.fillStyle=lock?"#ead9a8":"#f1f0ea";ctx.fillRect(x,y,w,nh);ctx.restore();
+  ctx.fillStyle="#667085";ctx.font="700 "+Math.max(11,nh*.58)+"px "+sans;ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("Plads "+id,x+w/2,y+nh/2+1);
+  const txt=off?"Ikke i brug":st?(names?names[st.id]:st.name):"Ledig";
+  const f=wrapFit(ctx,txt,w-14,h-nh-10,Math.round(h*.3),st?"650":"400",sans);
+  ctx.fillStyle=st?"#1c2434":"#94a3b8";ctx.font=(st?"650":"400")+" "+f.size+"px "+sans;
+  const lh=f.size*1.15,top=y+nh+(h-nh)/2-(f.lines.length*lh)/2+lh/2;
+  f.lines.forEach((ln,i)=>ctx.fillText(ln,x+w/2,top+i*lh));
+ });
+ ctx.textAlign="left";ctx.textBaseline="alphabetic";ctx.fillStyle="#667085";ctx.font="18px "+sans;
+ ctx.fillText(new Date().toLocaleDateString("da-DK",{day:"numeric",month:"long",year:"numeric"})+" · Øregård Gymnasium",pad,cv.height-14);
+ cv.toBlob(b=>{if(b)download(b,"Pladskort_"+safeName(c.name)+"_"+safeName(LAYOUT_NAMES[c.layout])+".png","image/png")},"image/png");
+}
+$("#png").onclick=()=>{savePng().then(()=>say("Billedet er gemt (se dine downloads).")).catch(()=>say("Billedet kunne ikke laves."))};
+
+/* ---------- Dagens hjernepause ---------- */
+function showBreak(i){
+ currentBreak=i;const e=ENERGIZERS[i],b=$("#breakBody");b.innerHTML="";
+ const t=document.createElement("div");t.className="brain-title";t.textContent=e.t;
+ const d=document.createElement("p");d.className="brain-desc";d.textContent=e.d;
+ b.append(t,d);
+ if(e.u){const p=document.createElement("p");p.className="brain-desc";const a=document.createElement("a");a.href=e.u;a.target="_blank";a.rel="noopener";a.textContent="Åbn video ↗";p.appendChild(a);b.appendChild(p)}
+}
+function renderAll(){
+ const box=$("#allList");box.innerHTML="";
+ ENERGIZERS.forEach((e,i)=>{
+  const d=document.createElement("div");d.className="all-item";
+  const h=document.createElement("h3");h.textContent=(i+1)+". "+e.t;
+  const p=document.createElement("p");p.textContent=e.d;d.append(h,p);
+  if(e.u){const a=document.createElement("a");a.href=e.u;a.target="_blank";a.rel="noopener";a.textContent="Åbn video ↗";d.appendChild(a)}
+  const b=document.createElement("button");b.type="button";b.textContent="Vis som dagens";
+  b.onclick=()=>{showBreak(i);$("#brainH").scrollIntoView({behavior:"smooth",block:"start"})};
+  d.appendChild(b);box.appendChild(d);
+ });
+}
+$("#allBreaks").onclick=()=>{
+ const box=$("#allList"),open=box.hidden;box.hidden=!open;
+ $("#allBreaks").textContent=open?"Skjul alle energizers":"Se alle energizers";$("#allBreaks").setAttribute("aria-expanded",String(open));
+};
+$("#newBreak").onclick=()=>{let i;do{i=Math.floor(Math.random()*ENERGIZERS.length)}while(i===currentBreak&&ENERGIZERS.length>1);showBreak(i)};
+function dayPick(){const d=new Date(),n=d.getFullYear()*372+d.getMonth()*31+d.getDate();return n%ENERGIZERS.length}
+
+/* ---------- Start ---------- */
+state=loadState();
+try{const im=JSON.parse(localStorage.getItem(IMG_KEY));if(im){images.logo=String(im.logo||"")}}catch(e){}
+try{
+ const seedEl=document.getElementById("seed"),SEED=JSON.parse(seedEl.textContent||"null");
+ if(SEED&&SEED.stamp&&!state.seen.includes(SEED.stamp)){
+  state.seen.push(SEED.stamp);state.seen=state.seen.slice(-50);
+  importPayload(SEED);
+ }
+}catch(e){}
+state.classes.forEach(clean);save();
+syncList();render();renderAll();showBreak(dayPick());
+})();
+</script>
+</body>
+</html>
